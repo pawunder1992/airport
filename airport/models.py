@@ -32,6 +32,16 @@ class Crew(models.Model):
 
 
 
+class Airport(models.Model):
+    name = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+
+
+    def __str__(self):
+        return f"{self.name} : {self.country}/{self.city}"
+
+
 class Airplane(models.Model):
     name = models.CharField(max_length=100)
     rows = models.PositiveIntegerField()
@@ -42,15 +52,6 @@ class Airplane(models.Model):
     def __str__(self):
         return self.name
 
-
-class Airport(models.Model):
-    name = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-
-
-    def __str__(self):
-        return f"{self.name} : {self.country}/{self.city}"
 
 
 class Route(models.Model):
