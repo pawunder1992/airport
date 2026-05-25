@@ -3,6 +3,17 @@ from django.db import models
 from config import settings
 
 
+
+
+
+
+class AirplaneType(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Crew(models.Model):
     class RoleChoices(models.TextChoices):
         PILOT = "pilot", "Pilot"
@@ -19,13 +30,6 @@ class Crew(models.Model):
     def __str__(self):
         return f"{self.get_role_display()}: {self.first_name} {self.last_name}"
 
-
-
-class AirplaneType(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
 
 
 class Airplane(models.Model):
