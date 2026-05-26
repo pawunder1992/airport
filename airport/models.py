@@ -81,7 +81,7 @@ class Route(models.Model):
 
 
     def __str__(self):
-        return f"{self.source.city}({self.source.code}) -> {self.destination.city}({self.destination.code}) ({self.distance} km)"
+        return f"{self.source.city}({self.source.code}) -> {self.destination.city}({self.destination.code})"
 
 
 class Flight(models.Model):
@@ -91,6 +91,17 @@ class Flight(models.Model):
     arrival_time = models.DateTimeField()
     crew = models.ManyToManyField(Crew)
 
+    @staticmethod
+    def validate_flight_time(departure_time, arrival_time, error_to_raise):
+        if departure_time > arrival_time:
+            raise error_to_raise("departure_time can`t be greater than arrival_time")
+
+    def clean(self):
+        Flight.validate_flight_time(self.departure_time, self.arrival_time, ValidationError)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.route.source.city} > {self.route.destination.city} ({self.departure_time} - {self.arrival_time})"

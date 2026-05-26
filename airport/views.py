@@ -1,8 +1,10 @@
+from django.db.models import F, Count
 from rest_framework import viewsets
 
-from airport.models import AirplaneType, Crew, Airport, Airplane, Route
+from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight
 from airport.serializers import AirplaneTypeSerializer, CrewSerializer, AirportSerializer, AirplaneSerializer, \
-    AirplaneListSerializer, AirplaneRetrieveSerializer, RouteSerializer, RouteListSerializer, RouteRetrieveSerializer
+    AirplaneListSerializer, AirplaneRetrieveSerializer, RouteSerializer, RouteListSerializer, RouteRetrieveSerializer, \
+    FlightSerializer, FlightListSerializer, FlightRetrieveSerializer
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
@@ -71,4 +73,51 @@ class RouteViewSet(viewsets.ModelViewSet):
 
         if self.action in ('list', "retrieve"):
             return queryset.select_related("source", "destination")
+        return queryset
+
+
+class FlightViewSet(viewsets.ModelViewSet):
+    queryset = Flight.objects.all()
+    serializer_class = FlightSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return FlightListSerializer
+        elif self.action == 'retrieve':
+            return FlightRetrieveSerializer
+        return self.serializer_class
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == "list":
+            source_city = self.request.query_params.get('source_city')
+            destination_city = self.request.query_params.get('destination_city')
+            date = self.request.query_params.get('date')
+            available = self.request.query_params.get('available')
+            if source_city:
+                queryset = queryset.filter(route__source__city__icontains=source_city)
+            if destination_city:
+                queryset = queryset.filter(route__destination__city__icontains=destination_city)
+            if date:
+                queryset = queryset.filter(departure_time__date=date)
+
+            queryset = queryset.select_related(
+                "route__source",
+                "route__destination",
+                "airplane"
+            ).annotate(
+                total_seats=F("airplane__rows") * F("airplane__seats_in_row"),
+                tickets_available=F("total_seats") - Count("tickets")
+            )
+            if available and available.lower() == "true":
+                queryset = queryset.filter(tickets_available__gt=0)
+
+
+        if self.action == "retrieve":
+            queryset = queryset.select_related(
+                "route__source",
+                "route__destination",
+                "airplane__airplane_type"
+            ).prefetch_related("crew")
+
         return queryset

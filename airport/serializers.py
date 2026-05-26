@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from airport.models import AirplaneType, Crew, Airport, Airplane, Route
+from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -27,11 +27,15 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "capacity")
+        fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
 
 
 class AirplaneListSerializer(AirplaneSerializer):
     airplane_type = serializers.CharField(source="airplane_type.name", read_only=True)
+    class Meta:
+        model = Airplane
+        fields = ("id", "name", "capacity", "airplane_type")
+
 
 class AirplaneRetrieveSerializer(AirplaneSerializer):
     airplane_type = AirplaneTypeSerializer()
@@ -53,3 +57,33 @@ class RouteListSerializer(RouteSerializer):
 class RouteRetrieveSerializer(RouteSerializer):
     source = AirportSerializer(read_only=True)
     destination = AirportSerializer(read_only=True)
+
+
+
+class FlightSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew")
+
+    def validate(self, attrs):
+        Flight.validate_flight_time(attrs["departure_time"], attrs["arrival_time"], serializers.ValidationError)
+        return attrs
+
+
+class FlightListSerializer(FlightSerializer):
+    departure_time = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
+    arrival_time = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
+    route = serializers.CharField(source="route.__str__", read_only=True)
+    airplane = serializers.CharField(source="airplane.name", read_only=True)
+    total_seats = serializers.IntegerField(read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
+    # crew = serializers.StringRelatedField(many=True)
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "total_seats", "departure_time", "arrival_time", "tickets_available")
+
+class FlightRetrieveSerializer(FlightSerializer):
+    route = RouteRetrieveSerializer(read_only=True)
+    airplane = AirplaneRetrieveSerializer(read_only=True)
+    crew = CrewSerializer(many=True, read_only=True)
