@@ -33,10 +33,14 @@ class Crew(models.Model):
 
 
 class Airport(models.Model):
+    code = models.CharField(max_length=3, unique=True)
     name = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["name", "city"], name="unique_name_city")
+        ]
 
     def __str__(self):
         return f"{self.name} : {self.country}/{self.city}"

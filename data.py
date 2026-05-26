@@ -23,7 +23,7 @@ def main():
     if created:
         admin.set_password("admin123")
         admin.save()
-        print("— Створено адміна: admin@airport.com (пароль: admin123)")
+        print("— Створено admіна: admin@airport.com (пароль: admin123)")
 
     passenger, created = User.objects.get_or_create(
         email="passenger@gmail.com",
@@ -57,11 +57,21 @@ def main():
     print("— Літаки додано до ангару")
 
 
-    # 4. СТВОРЕННЯ АЕРОПОРТІВ
-    kbp, _ = Airport.objects.get_or_create(name="Boryspil", country="Ukraine", city="Kyiv")
-    lhr, _ = Airport.objects.get_or_create(name="Heathrow", country="United Kingdom", city="London")
-    jfk, _ = Airport.objects.get_or_create(name="John F. Kennedy", country="USA", city="New York")
-    print("— Аеропорти побудовано")
+    # 4. СТВОРЕННЯ АЕРОПОРТІВ (ОНОВЛЕНО: Додано унікальні коди IATA)
+    # Тепер get_or_create шукає по унікальному коду, а решту полів додає у defaults
+    kbp, _ = Airport.objects.get_or_create(
+        code="KBP",
+        defaults={"name": "Boryspil", "country": "Ukraine", "city": "Kyiv"}
+    )
+    lhr, _ = Airport.objects.get_or_create(
+        code="LHR",
+        defaults={"name": "Heathrow", "country": "United Kingdom", "city": "London"}
+    )
+    jfk, _ = Airport.objects.get_or_create(
+        code="JFK",
+        defaults={"name": "John F. Kennedy", "country": "USA", "city": "New York"}
+    )
+    print("— Аеропорти побудовано (з кодами KBP, LHR, JFK)")
 
 
     # 5. СТВОРЕННЯ МАРШРУТІВ (Routes)
