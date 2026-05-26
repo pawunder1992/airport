@@ -37,12 +37,14 @@ class AirplaneRetrieveSerializer(AirplaneSerializer):
     airplane_type = AirplaneTypeSerializer()
 
 
-
 class RouteSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
+
+    def validate(self, attrs):
+        Route.validate_destination(attrs["source"], attrs["destination"], serializers.ValidationError)
+        return attrs
 
 class RouteListSerializer(RouteSerializer):
     source = serializers.CharField(source="source.code", read_only=True)

@@ -1,4 +1,5 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from config import settings
 
@@ -43,7 +44,7 @@ class Airport(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.name} : {self.country}/{self.city}"
+        return f"{self.name}({self.code}) : {self.country}/{self.city}"
 
 
 class Airplane(models.Model):
@@ -66,8 +67,21 @@ class Route(models.Model):
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrival_routes")
     distance = models.PositiveIntegerField()
 
+    @staticmethod
+    def validate_destination(source, destination, error_to_raise):
+        if source == destination:
+            raise error_to_raise("destination can`t be same as source")
+
+    def clean(self):
+        Route.validate_destination(self.source, self.destination, ValidationError)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
     def __str__(self):
-        return f"{self.source.city} -> {self.destination.city} ({self.distance} km)"
+        return f"{self.source.city}({self.source.code}) -> {self.destination.city}({self.destination.code}) ({self.distance} km)"
 
 
 class Flight(models.Model):
