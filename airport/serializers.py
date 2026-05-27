@@ -116,17 +116,20 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(TicketSerializer):
-    # flight = FlightListSerializer(read_only=True)
+
     flight = serializers.CharField(source="flight.route.__str__", read_only=True)
     class Meta:
         model = Ticket
         fields = ("row", "seat", "flight")
 
+class TicketRetrieveSerializer(TicketSerializer):
+    flight = FlightListSerializer(read_only=True)
+
 
 
 class OrderSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", read_only=True)
-    tickets = TicketSerializer(many=True)
+    tickets = TicketSerializer(many=True, allow_empty=False)
     class Meta:
         model = Order
         fields = ("id", "created_at", "tickets")
@@ -140,4 +143,7 @@ class OrderSerializer(serializers.ModelSerializer):
             return order
 
 class OrderListSerializer(OrderSerializer):
-    tickets = TicketListSerializer(many=True)
+    tickets = TicketListSerializer(many=True, read_only=True)
+
+class OrderRetrieveSerializer(OrderSerializer):
+    tickets = TicketRetrieveSerializer(many=True, read_only=True)

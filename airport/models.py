@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from config import settings
@@ -95,6 +96,9 @@ class Flight(models.Model):
     def validate_flight_time(departure_time, arrival_time, error_to_raise):
         if departure_time > arrival_time:
             raise error_to_raise("departure_time can`t be greater than arrival_time")
+        if departure_time < timezone.now():
+            raise error_to_raise("Departure time can't be less than current time (in the past).")
+
 
     def clean(self):
         Flight.validate_flight_time(self.departure_time, self.arrival_time, ValidationError)

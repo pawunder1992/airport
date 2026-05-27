@@ -4,7 +4,8 @@ from rest_framework import viewsets
 from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight, Order
 from airport.serializers import AirplaneTypeSerializer, CrewSerializer, AirportSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneRetrieveSerializer, RouteSerializer, RouteListSerializer, RouteRetrieveSerializer, \
-    FlightSerializer, FlightListSerializer, FlightRetrieveSerializer, OrderSerializer, OrderListSerializer
+    FlightSerializer, FlightListSerializer, FlightRetrieveSerializer, OrderSerializer, OrderListSerializer, \
+    OrderRetrieveSerializer
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
@@ -129,9 +130,12 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
-        if self.action == 'list':
-            queryset = queryset.prefetch_related("tickets__flight__airplane")
-
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related(
+                "tickets__flight__airplane",
+                "tickets__flight__route__source",
+                "tickets__flight__route__destination",
+            )
         return queryset
 
 
@@ -144,5 +148,5 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             serializer = OrderListSerializer
         if self.action == "retrieve":
-            serializer = OrderSerializer
+            serializer = OrderRetrieveSerializer
         return serializer
