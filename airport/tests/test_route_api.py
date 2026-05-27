@@ -5,9 +5,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from airport.models import AirplaneType, Airplane
-from airport.serializers import AirplaneListSerializer, AirplaneRetrieveSerializer, RouteListSerializer
-from airport.tests.factories import AirplaneFactory, AirplaneTypeFactory, UserFactory, AirportFactory, RouteFactory
+from airport.serializers import RouteListSerializer
+from airport.tests.factories import AirportFactory, RouteFactory
 
 ROUTE_URL = reverse("airport:route-list")
 
