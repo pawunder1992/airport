@@ -11,13 +11,9 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [TicketInline]
 
 
-
 admin.site.register(Airplane)
 admin.site.register(Airport)
 admin.site.register(AirplaneType)
 admin.site.register(Crew)
 admin.site.register(Flight)
 admin.site.register(Route)
-
-
-
