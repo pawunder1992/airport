@@ -1,5 +1,6 @@
 from django.db.models import F, Count
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight, Order
 from airport.serializers import AirplaneTypeSerializer, CrewSerializer, AirportSerializer, AirplaneSerializer, \
@@ -127,6 +128,7 @@ class FlightViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
@@ -143,9 +145,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_serializer_class(self):
-        serializer = self.serializer_class
         if self.action == 'list':
-            serializer = OrderListSerializer
-        if self.action == "retrieve":
-            serializer = OrderRetrieveSerializer
-        return serializer
+            return OrderListSerializer
+        if self.action in ("retrieve", "update", "partial_update"):
+            return OrderRetrieveSerializer
+
+        return self.serializer_class

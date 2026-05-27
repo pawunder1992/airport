@@ -121,8 +121,8 @@ AUTH_USER_MODEL = "user.User"
 REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     # 'PAGE_SIZE': 5,
-    # "DEFAULT_PERMISSION_CLASSES": [
-    #     'station.permissions.IsAdminAllOrIsAuthenticatedReadOnly', ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        'airport.permissions.IsAdminAllOrIsAuthenticatedReadOnly', ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],

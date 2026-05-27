@@ -78,10 +78,10 @@ class FlightListSerializer(FlightSerializer):
     airplane = serializers.CharField(source="airplane.name", read_only=True)
     total_seats = serializers.IntegerField(read_only=True)
     tickets_available = serializers.IntegerField(read_only=True)
-    # crew = serializers.StringRelatedField(many=True)
+    crew = serializers.StringRelatedField(many=True, read_only=True)
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "total_seats", "departure_time", "arrival_time", "tickets_available")
+        fields = ("id", "route", "airplane", "total_seats", "departure_time", "arrival_time", "tickets_available", "crew")
 
 class FlightRetrieveSerializer(FlightSerializer):
     departure_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
@@ -94,12 +94,7 @@ class FlightRetrieveSerializer(FlightSerializer):
         read_only=True,
         source="tickets",
     )
-    # taken_seats = serializers.SlugRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     slug_field="seat",
-    #     source="tickets",
-    # )
+
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew", "taken_seats")
