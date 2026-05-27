@@ -2,7 +2,7 @@ from django.db import models
 from rest_framework.exceptions import ValidationError
 
 from config import settings
-
+import string
 
 
 
@@ -122,7 +122,7 @@ class Order(models.Model):
 
 class Ticket(models.Model):
     row = models.PositiveIntegerField()
-    seat = models.PositiveIntegerField()
+    seat = models.CharField(max_length=1)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
@@ -132,6 +132,28 @@ class Ticket(models.Model):
         ]
         ordering = ["row", "seat"]
 
+    @staticmethod
+    def validate_seat(seat, airplane_seats, error_to_raise):
+        alphabet = string.ascii_uppercase
+        if seat not in alphabet[:airplane_seats]:
+            raise error_to_raise({"seat": f"seat must be a letter in range [A, {alphabet[airplane_seats-1]}], not {seat}"})
+    @staticmethod
+    def validate_row(row, airplane_rows, error_to_raise):
+        if not (1 <= row <= airplane_rows):
+            raise error_to_raise({"row": f"row must be in range [1, {airplane_rows}], not {row}"})
+
+    def clean(self):
+        Ticket.validate_seat(self.seat, self.flight.airplane.seats_in_row, ValueError)
+        Ticket.validate_row(self.row, self.flight.airplane.rows, ValueError)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.full_clean()
+        return super().save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields
+        )
 
     def __str__(self):
-        return f"Ticket #{self.id} [Flight {self.flight_id}] - Row: {self.row}, Seat: {self.seat}"
+        return f"Row: {self.row}, Seat: {self.seat}"

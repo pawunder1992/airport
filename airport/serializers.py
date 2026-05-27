@@ -1,6 +1,7 @@
+from django.db import transaction
 from rest_framework import serializers
 
-from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight
+from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight, Ticket, Order
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -61,7 +62,6 @@ class RouteRetrieveSerializer(RouteSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew")
@@ -72,8 +72,8 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightListSerializer(FlightSerializer):
-    departure_time = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
-    arrival_time = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
+    departure_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
+    arrival_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
     route = serializers.CharField(source="route.__str__", read_only=True)
     airplane = serializers.CharField(source="airplane.name", read_only=True)
     total_seats = serializers.IntegerField(read_only=True)
@@ -84,6 +84,60 @@ class FlightListSerializer(FlightSerializer):
         fields = ("id", "route", "airplane", "total_seats", "departure_time", "arrival_time", "tickets_available")
 
 class FlightRetrieveSerializer(FlightSerializer):
+    departure_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
+    arrival_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
     route = RouteRetrieveSerializer(read_only=True)
     airplane = AirplaneRetrieveSerializer(read_only=True)
     crew = CrewSerializer(many=True, read_only=True)
+    taken_seats = serializers.StringRelatedField(
+        many=True,
+        read_only=True,
+        source="tickets",
+    )
+    # taken_seats = serializers.SlugRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     slug_field="seat",
+    #     source="tickets",
+    # )
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew", "taken_seats")
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight")
+
+    def validate(self, attrs):
+        Ticket.validate_seat(attrs["seat"], attrs["flight"].airplane.seats_in_row, serializers.ValidationError)
+        Ticket.validate_row(attrs["row"], attrs["flight"].airplane.rows, serializers.ValidationError)
+        return attrs
+
+
+class TicketListSerializer(TicketSerializer):
+    # flight = FlightListSerializer(read_only=True)
+    flight = serializers.CharField(source="flight.route.__str__", read_only=True)
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat", "flight")
+
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", read_only=True)
+    tickets = TicketSerializer(many=True)
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "tickets")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
+
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True)
