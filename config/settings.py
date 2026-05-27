@@ -114,8 +114,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-MEDIA_URL = '/upload/'
-MEDIA_ROOT = BASE_DIR / 'upload'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = "user.User"
 
