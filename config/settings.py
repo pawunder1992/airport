@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "airport",
-    "user"
+    "user",
+    "drf_spectacular"
 ]
 
 MIDDLEWARE = [
@@ -126,7 +127,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 
     # 'DEFAULT_THROTTLE_CLASSES': [
     #     'rest_framework.throttling.AnonRateThrottle',
@@ -138,18 +139,21 @@ REST_FRAMEWORK = {
     # }
 }
 
-# SPECTACULAR_SETTINGS = {
-#     'TITLE': 'Bus Station API',
-#     'DESCRIPTION': 'Your project description',
-#     'VERSION': '1.0.0',
-#     'SERVE_INCLUDE_SCHEMA': False,
-#     'SWAGGER_UI_SETTINGS': {
-#         "deepLinking": True,
-#         "defaultModelRendering": "model",
-#         "defaultModelsExpandDepth": 2,
-#         "defaultModelExpandDepth": 2,
-#     }
-# }
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Airport API',
+    'DESCRIPTION': 'An automated backend system for managing flights, aircraft fleets, '
+        'and airport infrastructure. This API enables users to view available flights, '
+        'book multiple tickets securely under structured orders with atomic transactions, '
+        'and seamlessly select available seats.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        "deepLinking": True,
+        "defaultModelRendering": "model",
+        "defaultModelsExpandDepth": 2,
+        "defaultModelExpandDepth": 2,
+    }
+}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),

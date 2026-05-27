@@ -1,12 +1,16 @@
 from django.db.models import F, Count
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
 
 from airport.models import AirplaneType, Crew, Airport, Airplane, Route, Flight, Order
 from airport.serializers import AirplaneTypeSerializer, CrewSerializer, AirportSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneRetrieveSerializer, RouteSerializer, RouteListSerializer, RouteRetrieveSerializer, \
     FlightSerializer, FlightListSerializer, FlightRetrieveSerializer, OrderSerializer, OrderListSerializer, \
-    OrderRetrieveSerializer
+    OrderRetrieveSerializer, AirplaneImageSerializer
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
@@ -32,24 +36,53 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action == 'list':
-
             return AirplaneListSerializer
-
         elif self.action == 'retrieve':
             return AirplaneRetrieveSerializer
+        elif self.action == 'upload_image':
+            return AirplaneImageSerializer
         return self.serializer_class
+
+
 
     def get_queryset(self):
         queryset = self.queryset
         airplane_type = self.request.query_params.get('airplane_type')
         if airplane_type:
-
             queryset = queryset.filter(airplane_type__id=airplane_type)
-
         if self.action in ('list', "retrieve"):
             return queryset.select_related("airplane_type")
         return queryset
 
+    @action(
+        methods=["POST"],
+        detail=True,
+        permission_classes=[IsAdminUser],
+        url_path="upload-image"
+
+    )
+    def upload_image(self, request, pk=None):
+        plane = self.get_object()
+        serializer = self.get_serializer(plane, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='airplane_type',
+                type=int,
+                description='Filter by airplane-type id (ex. ?airplane_type=1)',
+                required=False
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of all airplanes"""
+        return super().list(request, *args, **kwargs)
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
@@ -77,6 +110,25 @@ class RouteViewSet(viewsets.ModelViewSet):
             return queryset.select_related("source", "destination")
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='source_city',
+                type=str,
+                description='Filter by source (ex. ?source_city=Kyiv)',
+                required=False
+            ),
+            OpenApiParameter(
+                name='destination_city',
+                type=str,
+                description='Filter by destination (ex. ?destination_city=London)',
+                required=False
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of all routes"""
+        return super().list(request, *args, **kwargs)
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
@@ -114,16 +166,40 @@ class FlightViewSet(viewsets.ModelViewSet):
             if available and available.lower() == "true":
                 queryset = queryset.filter(tickets_available__gt=0)
 
-
         if self.action == "retrieve":
             queryset = queryset.select_related(
                 "route__source",
                 "route__destination",
                 "airplane__airplane_type"
             ).prefetch_related("crew", "tickets")
-
         return queryset
 
+    @extend_schema(
+            parameters=[
+                OpenApiParameter(
+                    name='source_city',
+                    type=str,
+                    description='Filter by source (ex. ?source_city=Kyiv)',
+                    required=False
+                ),
+                OpenApiParameter(
+                    name='destination_city',
+                    type=str,
+                    description='Filter by destination (ex. ?destination_city=London)',
+                    required=False
+                ),
+                OpenApiParameter(
+                    name="available",
+                    type=bool,
+                    location=OpenApiParameter.QUERY,
+                    description="Select 'true' to see ONLY flights with free seats. Selecting 'false' or leaving it empty will show all flights.",
+                    required=False
+                ),
+            ],
+        )
+    def list(self, request, *args, **kwargs):
+        """Get list of all routes"""
+        return super().list(request, *args, **kwargs)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
