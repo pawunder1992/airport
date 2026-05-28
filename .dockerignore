@@ -1,12 +1,11 @@
-# Git
+
 .git
 .gitignore
 
-# Docker
+
 docker-compose.yml
 .env
 
-# Тимчасові файли Python та кеш
 __pycache__/
 *.pyc
 *.pyo
@@ -15,15 +14,15 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Віртуальне оточення (якщо створював локально)
+
 venv/
 .venv/
 env/
 
-# Медіа та завантаження (ми мапимо їх через volumes, в образі вони не потрібні)
+
 media/
 staticfiles/
 
-# Налаштування IDE (PyCharm, VS Code)
+
 .idea/
 .vscode/
