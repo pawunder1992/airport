@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -78,8 +80,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 import os
 
-
-
+from dotenv import  load_dotenv
+load_dotenv()
 
 DATABASES = {
     "default": {
