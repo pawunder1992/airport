@@ -43,7 +43,9 @@ class CrewFactory(factory.django.DjangoModelFactory):
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
-    role = factory.Iterator([Crew.RoleChoices.PILOT, Crew.RoleChoices.STEWARDESS])
+    role = factory.Iterator(
+        [Crew.RoleChoices.PILOT, Crew.RoleChoices.STEWARDESS]
+    )
 
 
 class AirportFactory(factory.django.DjangoModelFactory):
@@ -82,8 +84,12 @@ class FlightFactory(factory.django.DjangoModelFactory):
 
     route = factory.SubFactory(RouteFactory)
     airplane = factory.SubFactory(AirplaneFactory)
-    departure_time = factory.LazyFunction(lambda: timezone.now() + timedelta(hours=2))
-    arrival_time = factory.LazyFunction(lambda: timezone.now() + timedelta(hours=5))
+    departure_time = factory.LazyFunction(
+        lambda: timezone.now() + timedelta(hours=2)
+    )
+    arrival_time = factory.LazyFunction(
+        lambda: timezone.now() + timedelta(hours=5)
+    )
 
     @factory.post_generation
     def crew(self, create, extracted, **kwargs):
@@ -107,6 +113,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
 class TicketFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Ticket
+
     row = factory.Sequence(lambda n: n + 1)
     seat = "A"
 

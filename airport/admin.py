@@ -1,10 +1,20 @@
 from django.contrib import admin
-from .models import Airport, Airplane, AirplaneType, Crew, Ticket, Flight, Order, Route
+from .models import (
+    Airport,
+    Airplane,
+    AirplaneType,
+    Crew,
+    Ticket,
+    Flight,
+    Order,
+    Route,
+)
 
 
 class TicketInline(admin.TabularInline):
     model = Ticket
     extra = 1
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

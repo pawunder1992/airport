@@ -5,11 +5,14 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from airport.serializers import OrderListSerializer
-from airport.tests.factories import UserFactory, OrderFactory, AirplaneFactory, \
-    FlightFactory
+from airport.tests.factories import (
+    UserFactory,
+    OrderFactory,
+    AirplaneFactory,
+    FlightFactory,
+)
 
 ORDER_URL = reverse("airport:order-list")
-
 
 
 class UnauthenticatedOrderApiTests(TestCase):
@@ -67,6 +70,3 @@ class AuthenticatedOrderApiTests(TestCase):
         res = self.client.post(ORDER_URL, payload, format="json")
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("seat", str(res.data))
-
-
-

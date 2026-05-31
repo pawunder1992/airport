@@ -9,13 +9,21 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from airport.serializers import RouteListSerializer
-from airport.tests.factories import AirportFactory, RouteFactory, FlightFactory, AirplaneFactory, CrewFactory, \
-    TicketFactory
+from airport.tests.factories import (
+    AirportFactory,
+    RouteFactory,
+    FlightFactory,
+    AirplaneFactory,
+    CrewFactory,
+    TicketFactory,
+)
 
 FLIGHT_URL = reverse("airport:flight-list")
 
+
 def detail_url(flight_id):
     return reverse("airport:flight-detail", args=[flight_id])
+
 
 class UnauthenticatedFlightApiTests(TestCase):
     def setUp(self):
@@ -24,6 +32,7 @@ class UnauthenticatedFlightApiTests(TestCase):
     def test_auth_required(self):
         response = self.client.get(FLIGHT_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class AdminFlightApiTests(TestCase):
     def setUp(self):
@@ -45,12 +54,13 @@ class AdminFlightApiTests(TestCase):
             "airplane": airplane.id,
             "departure_time": departure.isoformat(),
             "arrival_time": arrival.isoformat(),
-            "crew": [crew.id]
+            "crew": [crew.id],
         }
         res = self.client.post(FLIGHT_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("departure_time can`t be greater than arrival_time", str(res.data))
-
+        self.assertIn(
+            "departure_time can`t be greater than arrival_time", str(res.data)
+        )
 
     def test_flight_time_less_than_current_time(self):
         route = RouteFactory()
@@ -64,12 +74,14 @@ class AdminFlightApiTests(TestCase):
             "airplane": airplane.id,
             "departure_time": departure.isoformat(),
             "arrival_time": arrival.isoformat(),
-            "crew": [crew.id]
+            "crew": [crew.id],
         }
         res = self.client.post(FLIGHT_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Departure time can't be less than current time (in the past).", str(res.data))
-
+        self.assertIn(
+            "Departure time can't be less than current time (in the past).",
+            str(res.data),
+        )
 
     def test_flight_available_seats_decreases(self):
         airplane = AirplaneFactory(rows=10, seats_in_row=6)
@@ -83,7 +95,9 @@ class AdminFlightApiTests(TestCase):
     def test_filter_flights_by_date(self):
         tomorrow = timezone.now() + timedelta(days=1)
         next_week = timezone.now() + timedelta(days=7)
-        flight_tomorrow = FlightFactory(departure_time=tomorrow, arrival_time=next_week)
+        flight_tomorrow = FlightFactory(
+            departure_time=tomorrow, arrival_time=next_week
+        )
         filter_date_str = tomorrow.date().isoformat()
         res = self.client.get(FLIGHT_URL, {"date": filter_date_str})
         self.assertEqual(res.status_code, status.HTTP_200_OK)

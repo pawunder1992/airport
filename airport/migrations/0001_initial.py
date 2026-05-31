@@ -239,7 +239,8 @@ class Migration(migrations.Migration):
                 "ordering": ["row", "seat"],
                 "constraints": [
                     models.UniqueConstraint(
-                        fields=("flight", "row", "seat"), name="unique_ticket_flight"
+                        fields=("flight", "row", "seat"),
+                        name="unique_ticket_flight",
                     )
                 ],
             },

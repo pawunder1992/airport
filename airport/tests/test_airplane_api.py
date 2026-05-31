@@ -6,8 +6,15 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from airport.models import AirplaneType, Airplane
-from airport.serializers import AirplaneListSerializer, AirplaneRetrieveSerializer
-from airport.tests.factories import AirplaneFactory, AirplaneTypeFactory, UserFactory
+from airport.serializers import (
+    AirplaneListSerializer,
+    AirplaneRetrieveSerializer,
+)
+from airport.tests.factories import (
+    AirplaneFactory,
+    AirplaneTypeFactory,
+    UserFactory,
+)
 
 AIRPLANE_URL = reverse("airport:airplane-list")
 
@@ -44,8 +51,12 @@ class AuthenticatedAirplaneApiTests(TestCase):
         plane1 = AirplaneFactory()
         plane2 = AirplaneFactory()
 
-        res_plane1 = self.client.get(AIRPLANE_URL, {"airplane_type": f"{plane1.airplane_type.id}"})
-        res_plane2 = self.client.get(AIRPLANE_URL, {"airplane_type": f"{plane2.airplane_type.id}"})
+        res_plane1 = self.client.get(
+            AIRPLANE_URL, {"airplane_type": f"{plane1.airplane_type.id}"}
+        )
+        res_plane2 = self.client.get(
+            AIRPLANE_URL, {"airplane_type": f"{plane2.airplane_type.id}"}
+        )
 
         serializer_plane1 = AirplaneListSerializer(plane1)
         serializer_plane2 = AirplaneListSerializer(plane2)
@@ -67,7 +78,7 @@ class AuthenticatedAirplaneApiTests(TestCase):
             "name": "test",
             "rows": 20,
             "seats_in_row": 6,
-            "airplane_type": airplane_type.id
+            "airplane_type": airplane_type.id,
         }
         res = self.client.post(AIRPLANE_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -93,13 +104,17 @@ class AdminAirplaneTests(TestCase):
             "name": "test",
             "rows": 20,
             "seats_in_row": 6,
-            "airplane_type": airplane_type.id
+            "airplane_type": airplane_type.id,
         }
         res = self.client.post(AIRPLANE_URL, payload)
         plane = Airplane.objects.get(id=res.data["id"])
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         for key in payload.keys():
-            self.assertEqual(payload[key], getattr(plane, key) if key != "airplane_type" else plane.airplane_type.id)
-
-
-
+            self.assertEqual(
+                payload[key],
+                (
+                    getattr(plane, key)
+                    if key != "airplane_type"
+                    else plane.airplane_type.id
+                ),
+            )

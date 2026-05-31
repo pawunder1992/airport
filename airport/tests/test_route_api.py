@@ -15,7 +15,6 @@ def detail_url(route_id):
     return reverse("airport:route-detail", args=[route_id])
 
 
-
 class UnauthenticatedRouteApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -23,6 +22,7 @@ class UnauthenticatedRouteApiTests(TestCase):
     def test_auth_required(self):
         response = self.client.get(ROUTE_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class AdminRouteApiTests(TestCase):
     def setUp(self):
@@ -49,8 +49,12 @@ class AdminRouteApiTests(TestCase):
         paris_airport = AirportFactory(city="Paris")
         route1 = RouteFactory(source=kyiv_airport, destination=paris_airport)
         route2 = RouteFactory(source=paris_airport, destination=london_airport)
-        res_source = self.client.get(ROUTE_URL, {"source_city": f"{kyiv_airport.city}"})
-        res_destination = self.client.get(ROUTE_URL, {"destination_city": f"{london_airport.city}"})
+        res_source = self.client.get(
+            ROUTE_URL, {"source_city": f"{kyiv_airport.city}"}
+        )
+        res_destination = self.client.get(
+            ROUTE_URL, {"destination_city": f"{london_airport.city}"}
+        )
         self.assertEqual(res_source.status_code, status.HTTP_200_OK)
         self.assertEqual(res_destination.status_code, status.HTTP_200_OK)
         serializer_route1 = RouteListSerializer(route1)
@@ -58,7 +62,6 @@ class AdminRouteApiTests(TestCase):
         self.assertEqual(len(res_source.data["results"]), 1)
         self.assertEqual(len(res_destination.data["results"]), 1)
         self.assertEqual(serializer_route1.data, res_source.data["results"][0])
-        self.assertEqual(serializer_route2.data, res_destination.data["results"][0])
-
-
-
+        self.assertEqual(
+            serializer_route2.data, res_destination.data["results"][0]
+        )
